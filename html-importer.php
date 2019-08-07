@@ -599,16 +599,20 @@ class HTML_Import extends WP_Importer {
 		}
 		
 		// if it's a single file, we can use a substitute for $path from here on
-		if ( '' == trim( $path ) )
-		 	$handle = __( "the uploaded file", 'import-html-pages' );
-		else 
-			$handle = $path;
-		
+		if ( '' == trim( $path ) ) {
+            $handle = __( "the uploaded file", 'import-html-pages' );
+        } else {
+            $handle = $path;
+        }
+        if (!is_array($this->table) || !is_object($this->table)) {
+            $this->table = [];
+        }
 		// see if the post already exists
 		// but don't bother printing this message if we're doing an index file; we know its parent already exists
-		if ( $post_id = post_exists( $my_post['post_title'], $my_post['post_content'], $my_post['post_date'] ) && basename( $path ) != $options['index_file'] )
-			$this->table[] = "<tr><th class='error'>--</th><td colspan='3' class='error'> " . sprintf( __( "%s ( %s ) has already been imported", 'html-import-pages' ), $my_post['post_title'], $handle ) . "</td></tr>";
-		
+		if ( $post_id = post_exists( $my_post['post_title'], $my_post['post_content'], $my_post['post_date'] ) && basename( $path ) != $options['index_file'] ) {
+            $this->table[] = "<tr><th class='error'>--</th><td colspan='3' class='error'> " . sprintf( __( "%s ( %s ) has already been imported", 'html-import-pages' ), $my_post['post_title'], $handle ) . "</td></tr>";
+        }
+
 		// if we're doing hierarchicals and this is an index file of a subdirectory, instead of importing this as a separate page, update the content of the placeholder page we created for the directory
 		$index_files = explode( ',',$options['index_file'] );
 		if ( is_post_type_hierarchical( $options['type'] ) && dirname( $path ) != $options['root_directory'] && in_array( basename( $path ), $index_files ) ) {
@@ -621,9 +625,11 @@ class HTML_Import extends WP_Importer {
 		if ( '' !== trim( $path ) && !$updatepost ) {
 			$url = esc_url( $options['old_url'] );
 			$url = rtrim( $url, '/' );
-			if ( !empty( $url ) ) 
-				$old_path = str_replace( $options['root_directory'], $url, $path );
-			else $old_path = $path;
+			if ( !empty( $url ) ) {
+                $old_path = str_replace( $options['root_directory'], $url, $path );
+            } else {
+                $old_path = $path;
+            }
 		}
 		
 		// see if this file has been previously imported based on path
@@ -637,7 +643,7 @@ class HTML_Import extends WP_Importer {
 		);
 		
 		// if so, set to update instead of import
-		if ( !is_wp_error( $previous_import ) && !empty( $previous_import ) 
+		if ( !is_wp_error( $previous_import ) && !empty( $previous_import )
 		 		&& $previous_import->post_title = $my_post['post_title'] ) {
 			$post_id = $previous_import->ID;
 			$updatepost = true;
@@ -647,16 +653,18 @@ class HTML_Import extends WP_Importer {
 		if ( $updatepost ) { 
 			$my_post['ID'] = $post_id; 
 			wp_update_post( $my_post );
-		}
-		else 
-			$post_id = wp_insert_post( $my_post );
-		
+		} else {
+            $post_id = wp_insert_post( $my_post );
+        }
+
 		// handle errors
-		if ( is_wp_error( $post_id ) )
-			$this->table[] = "<tr><th class='error'>--</th><td colspan='3' class='error'> " . $post_id /* error msg */ . "</td></tr>";
-		if ( !$post_id ) 
-			$this->table[] = "<tr><th class='error'>--</th><td colspan='3' class='error'> " . sprintf( __( "Could not import %s. You should copy its contents manually.", 'html-import-pages' ), $handle ) . "</td></tr>";
-		
+		if ( is_wp_error( $post_id ) ) {
+            $this->table[] = "<tr><th class='error'>--</th><td colspan='3' class='error'> " . $post_id /* error msg */ . "</td></tr>";
+        }
+		if ( !$post_id ) {
+            $this->table[] = "<tr><th class='error'>--</th><td colspan='3' class='error'> " . sprintf( __( "Could not import %s. You should copy its contents manually.", 'html-import-pages' ), $handle ) . "</td></tr>";
+        }
+
 		// if no errors, handle custom fields
 		if ( isset( $customfields ) ) {
 			foreach ( $customfields as $fieldname => $fieldvalue ) {
@@ -1037,8 +1045,13 @@ class HTML_Import extends WP_Importer {
 			<th><?php _e( 'Old path', 'import-html-pages' ); ?></th>
 			<th><?php _e( 'New path', 'import-html-pages' ); ?></th>
 			<th><?php _e( 'Title', 'import-html-pages' ); ?></th>
-			</tr></thead><tbody> <?php foreach ( $this->table as $row ) echo $row; ?> </tbody></table> 
-		
+			</tr></thead><tbody> <?php
+                if (is_array($this->table) || is_object($this->table)) {
+                    foreach ( $this->table as $row ) {
+                        echo $row;
+                    }
+                }
+                ?> </tbody></table>
 			<?php
 			flush();
 			
